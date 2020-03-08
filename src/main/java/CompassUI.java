@@ -1,70 +1,65 @@
 import javafx.application.Application;
-import javafx.collections.ObservableList;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
-import javafx.scene.control.Label;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.input.MouseEvent;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.transform.Affine;
-import javafx.scene.transform.Rotate;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 
 public class CompassUI extends Application {
-    Compass compass = new Compass();
-    ImageView imageView;
-    Rotate rotate;
-    Double dl1 = 0.0;
-    Double dl2 = 0.0;
-    Double wek = 0.0;
-    public void getDl(Double x, Double y){
-        dl1 = Math.sqrt((x*x+y*y));
-        //System.out.println(dl1);
-    }
-    public void getD2(Double x, Double y){
-        dl2 = Math.sqrt((x*x+y*y));
-        //System.out.println(dl2);
-    }
+    boolean needle = false;
     public void start(Stage primaryStage) throws Exception {
+        final Compass compass = new Compass();
 
-        Label label = new Label("N");
         BorderPane borderPane = new BorderPane();
-        borderPane.setPrefSize(200,200);
-        final Scene scene = new Scene(borderPane);
-        compass.setLabel(label);
-        final Image image = new Image("one.png");
-
-        imageView = new ImageView(image);
-        borderPane.setCenter(imageView);
-        borderPane.setLeft(compass.getLabel());
-        //compass.setBackgroundColor();
-        scene.setOnMouseClicked(new EventHandler<MouseEvent>() {
-            public void handle(MouseEvent event) {
-                compass.setNorthPositionX(event.getX());
-                compass.setnorthPositionY(event.getY());
-                compass.setNorthPosition();
-                getDl(event.getX(),event.getY());
-                getD2(scene.getWidth()/2,scene.getHeight()/2);
-                Double sin =  dl2/dl1;
-                wek = event.getX()*scene.getWidth()/2+event.getY()*scene.getHeight()/2;
-                //System.out.println(sin);
-                System.out.println(Math.toDegrees(Math.sin(wek/sin)));
-                rotate = Affine.rotate(Math.toDegrees(Math.cos(sin)),image.getWidth()/2,image.getHeight()/2);
-                //System.out.println(scene.getWidth()+" "+event.getX());
-                //System.out.println(Math.sin((scene.getWidth()/2)+(scene.getWidth()-event.getX())));
-                if(imageView.getTransforms().size()==0){
-                    imageView.getTransforms().addAll(rotate);
+        VBox vBox = new VBox();
+        ComboBox comboBox = new ComboBox();
+        ComboBox comboBox2 = new ComboBox();
+        for(Compass.Rose a : Compass.Rose.values()){
+            comboBox.getItems().add(a);
+        }
+        comboBox.valueProperty().addListener(new ChangeListener() {
+            @Override
+            public void changed(ObservableValue observable, Object oldValue, Object newValue) {
+                compass.setRose((Compass.Rose) newValue);
+            }
+        });
+        //listenery combo
+        for(Compass.BGColor color : Compass.BGColor.values()){
+            comboBox2.getItems().add(color);
+        }
+        comboBox2.valueProperty().addListener(new ChangeListener() {
+            @Override
+            public void changed(ObservableValue observable, Object oldValue, Object newValue) {
+                compass.setBackgroundColor((Compass.BGColor) newValue);
+            }
+        });
+        final Button button = new Button("Needle");
+        button.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                needle = !needle;
+                if(needle){
+                    button.setText("Rose");
+                    compass.rotateNorth(compass.getNorthPositionX(),compass.getNorthPositionY());
                 }else{
-                    imageView.getTransforms().set(0,rotate);
-
+                    button.setText("Needle");
+                    compass.rotateTarget(compass.getTargetPositionX(),compass.getTargetPositionY());
                 }
             }
         });
+        vBox.getChildren().addAll(comboBox,comboBox2,button);
+        borderPane.setPrefSize(200,200);
+        Scene scene = new Scene(borderPane);
+        borderPane.setCenter(compass);
+        borderPane.setRight(vBox);
         primaryStage.setScene(scene);
         primaryStage.show();
-        //System.out.println(primaryStage.getWidth()/2+" "+primaryStage.getHeight()/2);
     }
 
     public static void main(String[] args) {
