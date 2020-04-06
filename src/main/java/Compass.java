@@ -17,11 +17,11 @@ public class Compass extends Pane {
     private Double northPositionY = 0.0;
     private Double targetPositionX = 0.0;
     private Double targetPositionY = 0.0;
-    private Color backgroundColor;
-    private ImageView imageView;
+    private ImageView roseImageView;
     private ImageView canvasView;
-    private Image image;
+    private Image roseImage;
     private Label north;
+
     public enum Rose{
         ONE("one.png"),
         TWO("two.png");
@@ -50,22 +50,22 @@ public class Compass extends Pane {
         String color;
     }
     public void rotateNorth(double x, double y){
-        double centerX =  image.getWidth()/2;
-        double centerY =  image.getHeight()/2;
+        double centerX =  roseImage.getWidth()/2;
+        double centerY =  roseImage.getHeight()/2;
         double angle =  Math.toDegrees(Math.atan2(y - centerY, x - centerX))+90;
         canvasView.setRotate(angle);
     }
 
     public void rotateTarget(double x, double y){
-        double centerX =  image.getWidth()/2;
-        double centerY =  image.getHeight()/2;
+        double centerX =  roseImage.getWidth()/2;
+        double centerY =  roseImage.getHeight()/2;
         double angle =  Math.toDegrees(Math.atan2(y - centerY, x - centerX))+90;
-        imageView.setRotate(angle);
+        roseImageView.setRotate(angle);
     }
     public void prepareNeedle(){
-        Canvas canvas = new Canvas(image.getWidth(),image.getHeight());
-        double centerX =  image.getWidth()/2;
-        double centerY =  image.getHeight()/2;
+        Canvas canvas = new Canvas(roseImage.getWidth(),roseImage.getHeight());
+        double centerX =  roseImage.getWidth()/2;
+        double centerY =  roseImage.getHeight()/2;
         GraphicsContext graphicsContext = canvas.getGraphicsContext2D();
         graphicsContext.setLineWidth(5);
         graphicsContext.setStroke(Color.BLUE);
@@ -74,7 +74,7 @@ public class Compass extends Pane {
         double[] y = new double[]{centerY,20,centerY,centerY,(centerY*2)-20,centerY};
         graphicsContext.strokePolygon(x,y,6);
         graphicsContext.fillPolygon(x,y,6);
-        Image image = canvas.snapshot(new SnapshotParameters(),new WritableImage((int)this.image.getWidth(),(int)this.image.getHeight()));
+        Image image = canvas.snapshot(new SnapshotParameters(),new WritableImage((int)roseImage.getWidth(),(int)roseImage.getHeight()));
         canvasView = new ImageView(image);
         canvasView.setOpacity(0.50);
         if(!this.getChildren().contains(canvasView)){
@@ -86,10 +86,10 @@ public class Compass extends Pane {
     }
     public Compass(){
         this.setPrefSize(x,y);
-        image = new Image(Rose.ONE.getUrl());
-        imageView = new ImageView(image);
+        roseImage = new Image(Rose.ONE.getUrl());
+        roseImageView = new ImageView(roseImage);
         north = new Label("N");
-        this.getChildren().addAll(imageView,north);
+        this.getChildren().addAll(roseImageView,north);
         handle();
         prepareNeedle();
     }
@@ -99,18 +99,28 @@ public class Compass extends Pane {
         setRose(rose);
         setBackgroundColor(color);
     }
+    public Compass(Rose rose){
+        this.setPrefSize(x,y);
+        roseImage = new Image(rose.getUrl());
+        roseImageView = new ImageView(roseImage);
+        north = new Label("N");
+        this.getChildren().addAll(roseImageView,north);
+        handle();
+        prepareNeedle();
+    }
     public void setBackgroundColor(BGColor color){
         this.setStyle("-fx-background-color: "+color.getColor());
     }
     public void setRose(Rose rose){
-        this.getChildren().remove(imageView);
-        image = new Image(rose.getUrl());
-        imageView = new ImageView(image);
-        this.getChildren().add(imageView);
+        this.getChildren().remove(roseImageView);
+        roseImage = new Image(rose.getUrl());
+        roseImageView = new ImageView(roseImage);
+        this.getChildren().add(roseImageView);
+        prepareNeedle();
     }
     public void setSize(double x, double y){
-        imageView.setScaleX(x);
-        imageView.setScaleY(y);
+        roseImageView.setScaleX(x);
+        roseImageView.setScaleY(y);
     }
 
     public void handle(){

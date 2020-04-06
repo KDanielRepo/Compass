@@ -12,15 +12,15 @@ import javafx.stage.Stage;
 
 
 public class CompassUI extends Application {
-    boolean needle = false;
+
     public void start(Stage primaryStage) throws Exception {
-        final Compass compass = new Compass();
+        final Compass compass = new Compass(Compass.Rose.TWO);
 
         BorderPane borderPane = new BorderPane();
         VBox vBox = new VBox();
         ComboBox comboBox = new ComboBox();
         ComboBox comboBox2 = new ComboBox();
-        for(Compass.Rose a : Compass.Rose.values()){
+        for (Compass.Rose a : Compass.Rose.values()) {
             comboBox.getItems().add(a);
         }
         comboBox.valueProperty().addListener(new ChangeListener() {
@@ -30,7 +30,7 @@ public class CompassUI extends Application {
             }
         });
         //listenery combo
-        for(Compass.BGColor color : Compass.BGColor.values()){
+        for (Compass.BGColor color : Compass.BGColor.values()) {
             comboBox2.getItems().add(color);
         }
         comboBox2.valueProperty().addListener(new ChangeListener() {
@@ -39,22 +39,24 @@ public class CompassUI extends Application {
                 compass.setBackgroundColor((Compass.BGColor) newValue);
             }
         });
-        final Button button = new Button("Needle");
-        button.setOnAction(new EventHandler<ActionEvent>() {
+        Button rotateNeedle = new Button("Needle");
+        rotateNeedle.setText("Needle");
+        rotateNeedle.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                needle = !needle;
-                if(needle){
-                    button.setText("Rose");
-                    compass.rotateNorth(compass.getNorthPositionX(),compass.getNorthPositionY());
-                }else{
-                    button.setText("Needle");
-                    compass.rotateTarget(compass.getTargetPositionX(),compass.getTargetPositionY());
-                }
+                compass.rotateNorth(compass.getNorthPositionX(), compass.getNorthPositionY());
             }
         });
-        vBox.getChildren().addAll(comboBox,comboBox2,button);
-        borderPane.setPrefSize(200,200);
+        Button rotateRose = new Button();
+        rotateRose.setText("Rose");
+        rotateRose.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                compass.rotateTarget(compass.getTargetPositionX(), compass.getTargetPositionY());
+            }
+        });
+        vBox.getChildren().addAll(comboBox, comboBox2, rotateNeedle,rotateRose);
+        borderPane.setPrefSize(200, 200);
         Scene scene = new Scene(borderPane);
         borderPane.setCenter(compass);
         borderPane.setRight(vBox);
@@ -63,6 +65,6 @@ public class CompassUI extends Application {
     }
 
     public static void main(String[] args) {
-        launch(CompassUI.class,args);
+        launch(CompassUI.class, args);
     }
 }
