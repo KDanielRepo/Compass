@@ -1,65 +1,88 @@
 import javafx.application.Application;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+
+import java.io.File;
 
 
 public class CompassUI extends Application {
 
     public void start(Stage primaryStage) throws Exception {
-        final Compass compass = new Compass(Compass.Rose.TWO);
-
         BorderPane borderPane = new BorderPane();
-        VBox vBox = new VBox();
-        ComboBox comboBox = new ComboBox();
-        ComboBox comboBox2 = new ComboBox();
-        for (Compass.Rose a : Compass.Rose.values()) {
-            comboBox.getItems().add(a);
-        }
-        comboBox.valueProperty().addListener(new ChangeListener() {
-            @Override
-            public void changed(ObservableValue observable, Object oldValue, Object newValue) {
-                compass.setRose((Compass.Rose) newValue);
-            }
-        });
-        //listenery combo
-        for (Compass.BGColor color : Compass.BGColor.values()) {
-            comboBox2.getItems().add(color);
-        }
-        comboBox2.valueProperty().addListener(new ChangeListener() {
-            @Override
-            public void changed(ObservableValue observable, Object oldValue, Object newValue) {
-                compass.setBackgroundColor((Compass.BGColor) newValue);
-            }
-        });
-        Button rotateNeedle = new Button("Needle");
-        rotateNeedle.setText("Needle");
-        rotateNeedle.setOnAction(new EventHandler<ActionEvent>() {
+        borderPane.setPrefSize(800,800);
+        final Compass compass = new Compass();
+        VBox tools = new VBox();
+        HBox labelBox = new HBox();
+        HBox tfBox = new HBox();
+        HBox buttonBox = new HBox();
+        HBox chooser = new HBox();
+        Label xPos = new Label("Pozycja X");
+        xPos.setPrefWidth(100);
+        Label yPos = new Label("Pozycja Y");
+        yPos.setPrefWidth(100);
+        final TextField xField = new TextField();
+        xField.setPrefWidth(xPos.getPrefWidth());
+        final TextField yField = new TextField();
+        yField.setPrefWidth(yField.getPrefWidth());
+        Button northButton = new Button("Ustaw pozycję północy");
+        northButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                compass.rotateNorth(compass.getNorthPositionX(), compass.getNorthPositionY());
+                compass.setNorthPositionX(Double.parseDouble(xField.getText()));
+                compass.setNorthPositionY(Double.parseDouble(yField.getText()));
+                compass.rotateNeedle();
             }
         });
-        Button rotateRose = new Button();
-        rotateRose.setText("Rose");
-        rotateRose.setOnAction(new EventHandler<ActionEvent>() {
+        Button targetButton = new Button("Ustaw pozycję celu");
+        targetButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                compass.rotateTarget(compass.getTargetPositionX(), compass.getTargetPositionY());
+                compass.setTargetPositionX(Double.parseDouble(xField.getText()));
+                compass.setTargetPositionY(Double.parseDouble(yField.getText()));
+                compass.rotateRose();
             }
         });
-        vBox.getChildren().addAll(comboBox, comboBox2, rotateNeedle,rotateRose);
-        borderPane.setPrefSize(200, 200);
+        Button needleChooser = new Button("Wybierz igłę");
+        needleChooser.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                Stage st = new Stage();
+                FileChooser fileChooser = new FileChooser();
+                fileChooser.setTitle("Wybierz igłę");
+                File fl = fileChooser.showOpenDialog(st);
+                compass.changeNeedle("file:///"+fl.getPath());
+            }
+        });
+        Button roseChooser = new Button("Wybierz różę");
+        roseChooser.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                Stage st = new Stage();
+                FileChooser fileChooser = new FileChooser();
+                fileChooser.setTitle("Wybierz różę");
+                File fl = fileChooser.showOpenDialog(st);
+                compass.changeRose("file:///"+fl.getPath());
+            }
+        });
+
+        labelBox.getChildren().addAll(xPos,yPos);
+        tfBox.getChildren().addAll(xField,yField);
+        buttonBox.getChildren().addAll(northButton,targetButton);
+        chooser.getChildren().addAll(needleChooser,roseChooser);
+        tools.getChildren().addAll(labelBox,tfBox,buttonBox,chooser);
+        borderPane.setRight(tools);
+
+        borderPane.setLeft(compass);
         Scene scene = new Scene(borderPane);
-        borderPane.setCenter(compass);
-        borderPane.setRight(vBox);
         primaryStage.setScene(scene);
         primaryStage.show();
     }
